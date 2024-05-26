@@ -1,0 +1,9 @@
+CREATE TABLE shitposts (
+    "id" INTEGER PRIMARY KEY,
+    "title" TEXT NOT NULL DEFAULT '',
+    "author" TEXT NOT NULL DEFAULT 'Anonymous',
+    "content" TEXT NOT NULL,
+    "passcode" TEXT NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
