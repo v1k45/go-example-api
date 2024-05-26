@@ -9,11 +9,11 @@ import (
 )
 
 type Shitpost struct {
-	ID        int64
-	Title     string
-	Author    string
-	Content   string
-	Passcode  string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        int64     `json:"id"`
+	Title     string    `json:"title"`
+	Author    string    `json:"author"`
+	Content   string    `json:"content"`
+	Passcode  string    `json:"passcode"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }

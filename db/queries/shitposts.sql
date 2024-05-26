@@ -1,15 +1,14 @@
 -- name: ListShitposts :many
-
-SELECT id, author, content, created_at, updated_at FROM shitposts;
+SELECT id, title, author, content, created_at, updated_at FROM shitposts;
 
 -- name: GetShitpostById :one
-
-SELECT id, author, content, created_at, updated_at FROM shitposts WHERE id = ?;
+SELECT id, title, author, content, created_at, updated_at FROM shitposts WHERE id = ?;
 
 -- name: CreateShitpost :one
+INSERT INTO shitposts (title, author, content, passcode) VALUES (?, ?, ?, ?) RETURNING *;
 
-INSERT INTO shitposts (author, content, passcode) VALUES (?, ?, ?) RETURNING *;
+-- name: GetShitpostByIdAndPasscode :one
+SELECT id FROM shitposts WHERE id = ? and passcode = ?;
 
--- name: DeleteShitpostById :one
-
-DELETE FROM shitposts WHERE id = ? and passcode = ? RETURNING *;
+-- name: DeleteShitpostById :exec
+DELETE FROM shitposts WHERE id = ? and passcode = ?;

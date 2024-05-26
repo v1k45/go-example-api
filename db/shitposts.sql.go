@@ -11,18 +11,23 @@ import (
 )
 
 const createShitpost = `-- name: CreateShitpost :one
-
-INSERT INTO shitposts (author, content, passcode) VALUES (?, ?, ?) RETURNING id, title, author, content, passcode, created_at, updated_at
+INSERT INTO shitposts (title, author, content, passcode) VALUES (?, ?, ?, ?) RETURNING id, title, author, content, passcode, created_at, updated_at
 `
 
 type CreateShitpostParams struct {
-	Author   string
-	Content  string
-	Passcode string
+	Title    string `json:"title"`
+	Author   string `json:"author"`
+	Content  string `json:"content"`
+	Passcode string `json:"passcode"`
 }
 
 func (q *Queries) CreateShitpost(ctx context.Context, arg CreateShitpostParams) (Shitpost, error) {
-	row := q.db.QueryRowContext(ctx, createShitpost, arg.Author, arg.Content, arg.Passcode)
+	row := q.db.QueryRowContext(ctx, createShitpost,
+		arg.Title,
+		arg.Author,
+		arg.Content,
+		arg.Passcode,
+	)
 	var i Shitpost
 	err := row.Scan(
 		&i.ID,
@@ -36,42 +41,31 @@ func (q *Queries) CreateShitpost(ctx context.Context, arg CreateShitpostParams) 
 	return i, err
 }
 
-const deleteShitpostById = `-- name: DeleteShitpostById :one
-
-DELETE FROM shitposts WHERE id = ? and passcode = ? RETURNING id, title, author, content, passcode, created_at, updated_at
+const deleteShitpostById = `-- name: DeleteShitpostById :exec
+DELETE FROM shitposts WHERE id = ? and passcode = ?
 `
 
 type DeleteShitpostByIdParams struct {
-	ID       int64
-	Passcode string
+	ID       int64  `json:"id"`
+	Passcode string `json:"passcode"`
 }
 
-func (q *Queries) DeleteShitpostById(ctx context.Context, arg DeleteShitpostByIdParams) (Shitpost, error) {
-	row := q.db.QueryRowContext(ctx, deleteShitpostById, arg.ID, arg.Passcode)
-	var i Shitpost
-	err := row.Scan(
-		&i.ID,
-		&i.Title,
-		&i.Author,
-		&i.Content,
-		&i.Passcode,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+func (q *Queries) DeleteShitpostById(ctx context.Context, arg DeleteShitpostByIdParams) error {
+	_, err := q.db.ExecContext(ctx, deleteShitpostById, arg.ID, arg.Passcode)
+	return err
 }
 
 const getShitpostById = `-- name: GetShitpostById :one
-
-SELECT id, author, content, created_at, updated_at FROM shitposts WHERE id = ?
+SELECT id, title, author, content, created_at, updated_at FROM shitposts WHERE id = ?
 `
 
 type GetShitpostByIdRow struct {
-	ID        int64
-	Author    string
-	Content   string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        int64     `json:"id"`
+	Title     string    `json:"title"`
+	Author    string    `json:"author"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 func (q *Queries) GetShitpostById(ctx context.Context, id int64) (GetShitpostByIdRow, error) {
@@ -79,6 +73,7 @@ func (q *Queries) GetShitpostById(ctx context.Context, id int64) (GetShitpostByI
 	var i GetShitpostByIdRow
 	err := row.Scan(
 		&i.ID,
+		&i.Title,
 		&i.Author,
 		&i.Content,
 		&i.CreatedAt,
@@ -87,17 +82,33 @@ func (q *Queries) GetShitpostById(ctx context.Context, id int64) (GetShitpostByI
 	return i, err
 }
 
-const listShitposts = `-- name: ListShitposts :many
+const getShitpostByIdAndPasscode = `-- name: GetShitpostByIdAndPasscode :one
+SELECT id FROM shitposts WHERE id = ? and passcode = ?
+`
 
-SELECT id, author, content, created_at, updated_at FROM shitposts
+type GetShitpostByIdAndPasscodeParams struct {
+	ID       int64  `json:"id"`
+	Passcode string `json:"passcode"`
+}
+
+func (q *Queries) GetShitpostByIdAndPasscode(ctx context.Context, arg GetShitpostByIdAndPasscodeParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getShitpostByIdAndPasscode, arg.ID, arg.Passcode)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const listShitposts = `-- name: ListShitposts :many
+SELECT id, title, author, content, created_at, updated_at FROM shitposts
 `
 
 type ListShitpostsRow struct {
-	ID        int64
-	Author    string
-	Content   string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        int64     `json:"id"`
+	Title     string    `json:"title"`
+	Author    string    `json:"author"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 func (q *Queries) ListShitposts(ctx context.Context) ([]ListShitpostsRow, error) {
@@ -111,6 +122,7 @@ func (q *Queries) ListShitposts(ctx context.Context) ([]ListShitpostsRow, error)
 		var i ListShitpostsRow
 		if err := rows.Scan(
 			&i.ID,
+			&i.Title,
 			&i.Author,
 			&i.Content,
 			&i.CreatedAt,

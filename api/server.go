@@ -1,9 +1,19 @@
 package api
 
-import "net/http"
+import (
+	"log"
+	"net/http"
 
-func NewServer(addr string) *http.Server {
-	handler := NewHandler()
+	"github.com/v1k45/shitpost/db"
+)
+
+func NewServer(addr string, databaseUrl string) *http.Server {
+	conn, err := db.Open(databaseUrl)
+	if err != nil {
+		log.Fatalf("Error connecting to database: %v", err)
+	}
+
+	handler := NewHandler(conn)
 
 	return &http.Server{
 		Addr:    addr,
