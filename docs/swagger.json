@@ -1,0 +1,263 @@
+{
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "schemes": [
+        "http"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "A simple API for creating and listing shitposts.",
+        "title": "Shitpost API",
+        "contact": {
+            "name": "Vikas"
+        },
+        "version": "1"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/": {
+            "get": {
+                "description": "Get a welcome message",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Welcome message",
+                "operationId": "welcome",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.WelcomeResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/shitposts": {
+            "get": {
+                "description": "List all shitposts",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List shitposts",
+                "operationId": "listShitposts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.PaginatedShitpostsResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new shitpost",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a shitpost",
+                "operationId": "createShitpost",
+                "parameters": [
+                    {
+                        "description": "Shitpost payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.CreateShitpostPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/db.Shitpost"
+                        }
+                    }
+                }
+            }
+        },
+        "/shitposts/{id}": {
+            "get": {
+                "description": "Get a shitpost by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get a shitpost",
+                "operationId": "getShitpost",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Shitpost ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/db.Shitpost"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a shitpost by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a shitpost",
+                "operationId": "deleteShitpost",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Shitpost ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Shitpost deletion payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.DeleteShitpostPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "api.CreateShitpostPayload": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.DeleteShitpostPayload": {
+            "type": "object",
+            "properties": {
+                "passcode": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.PaginatedShitpostsResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "currentPage": {
+                    "type": "integer"
+                },
+                "pages": {
+                    "type": "integer"
+                },
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/db.ListShitpostsRow"
+                    }
+                }
+            }
+        },
+        "api.WelcomeResponse": {
+            "type": "object",
+            "properties": {
+                "env": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                }
+            }
+        },
+        "db.ListShitpostsRow": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "db.Shitpost": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "passcode": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

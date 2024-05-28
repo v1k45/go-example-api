@@ -9,7 +9,10 @@ import (
 	"strconv"
 	"time"
 
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"github.com/v1k45/shitpost/db"
+
+	_ "github.com/v1k45/shitpost/docs"
 )
 
 const (
@@ -17,11 +20,27 @@ const (
 	DefaultPageSize = 5
 )
 
+// @title Shitpost API
+// @version 1
+// @description A simple API for creating and listing shitposts.
+// @contact.name Vikas
+// @license MIT
+// @host localhost:8080
+// @BasePath /
+// @schemes http
+// @accept json
+// @produce json
 type Handler struct {
 	queries *db.Queries
 	db      *sql.DB
 }
 
+// @Summary Welcome message
+// @ID welcome
+// @Description Get a welcome message
+// @Produce json
+// @Success 200 {object} WelcomeResponse
+// @Router / [get]
 func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 	hostname, _ := os.Hostname()
 
@@ -41,6 +60,13 @@ type PaginatedShitpostsResponse struct {
 	Pages       int                   `json:"pages"`
 }
 
+// @Summary List shitposts
+// @ID listShitposts
+// @Description List all shitposts
+// @Produce json
+// @Param page query int false "Page number"
+// @Success 200 {object} PaginatedShitpostsResponse
+// @Router /shitposts [get]
 func (h *Handler) ListShitposts(w http.ResponseWriter, r *http.Request) {
 	// get page number
 	pageQuery := r.URL.Query().Get("page")
@@ -86,6 +112,14 @@ func (h *Handler) ListShitposts(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summary Create a shitpost
+// @ID createShitpost
+// @Description Create a new shitpost
+// @Accept json
+// @Produce json
+// @Param payload body CreateShitpostPayload true "Shitpost payload"
+// @Success 201 {object} db.Shitpost
+// @Router /shitposts [post]
 func (h *Handler) CreateShitpost(w http.ResponseWriter, r *http.Request) {
 	// Validate the request payload
 	var shitpostPayload CreateShitpostPayload
@@ -111,6 +145,13 @@ func (h *Handler) CreateShitpost(w http.ResponseWriter, r *http.Request) {
 	JSONResponse(w, http.StatusCreated, shitpost)
 }
 
+// @Summary Get a shitpost
+// @ID getShitpost
+// @Description Get a shitpost by ID
+// @Produce json
+// @Param id path int true "Shitpost ID"
+// @Success 200 {object} db.Shitpost
+// @Router /shitposts/{id} [get]
 func (h *Handler) GetShitpost(w http.ResponseWriter, r *http.Request) {
 	// Extract the shitpost ID from the request path
 	postId, err := strconv.Atoi(r.PathValue("id"))
@@ -129,6 +170,14 @@ func (h *Handler) GetShitpost(w http.ResponseWriter, r *http.Request) {
 	JSONResponse(w, http.StatusOK, shitpost)
 }
 
+// @Summary Delete a shitpost
+// @ID deleteShitpost
+// @Description Delete a shitpost by ID
+// @Produce json
+// @Param id path int true "Shitpost ID"
+// @Param payload body DeleteShitpostPayload true "Shitpost deletion payload"
+// @Success 204
+// @Router /shitposts/{id} [delete]
 func (h *Handler) DeleteShitpost(w http.ResponseWriter, r *http.Request) {
 	// Extract the shitpost ID from the request path
 	postId, err := strconv.Atoi(r.PathValue("id"))
@@ -177,6 +226,9 @@ func (h *Handler) Routes() *http.ServeMux {
 	routes.HandleFunc("POST /shitposts", h.CreateShitpost)
 	routes.HandleFunc("GET /shitposts/{id}", h.DeleteShitpost)
 	routes.HandleFunc("DELETE /shitposts/{id}", h.DeleteShitpost)
+	routes.Handle("GET /swagger/", httpSwagger.Handler(
+		httpSwagger.URL("/swagger/doc.json"),
+	))
 	return routes
 }
 

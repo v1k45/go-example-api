@@ -72,3 +72,9 @@ DELETE /shitposts/{id}
     "secret": "my-secret"
 }
 ```
+
+#### OpenAPI docs
+
+```
+GET /swagger/
+```

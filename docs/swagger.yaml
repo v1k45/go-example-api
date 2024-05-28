@@ -1,0 +1,173 @@
+basePath: /
+consumes:
+- application/json
+definitions:
+  api.CreateShitpostPayload:
+    properties:
+      author:
+        type: string
+      content:
+        type: string
+      title:
+        type: string
+    type: object
+  api.DeleteShitpostPayload:
+    properties:
+      passcode:
+        type: string
+    type: object
+  api.PaginatedShitpostsResponse:
+    properties:
+      count:
+        type: integer
+      currentPage:
+        type: integer
+      pages:
+        type: integer
+      results:
+        items:
+          $ref: '#/definitions/db.ListShitpostsRow'
+        type: array
+    type: object
+  api.WelcomeResponse:
+    properties:
+      env:
+        type: string
+      message:
+        type: string
+      time:
+        type: string
+    type: object
+  db.ListShitpostsRow:
+    properties:
+      author:
+        type: string
+      content:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  db.Shitpost:
+    properties:
+      author:
+        type: string
+      content:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: integer
+      passcode:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: Vikas
+  description: A simple API for creating and listing shitposts.
+  title: Shitpost API
+  version: "1"
+paths:
+  /:
+    get:
+      description: Get a welcome message
+      operationId: welcome
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.WelcomeResponse'
+      summary: Welcome message
+  /shitposts:
+    get:
+      description: List all shitposts
+      operationId: listShitposts
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.PaginatedShitpostsResponse'
+      summary: List shitposts
+    post:
+      consumes:
+      - application/json
+      description: Create a new shitpost
+      operationId: createShitpost
+      parameters:
+      - description: Shitpost payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateShitpostPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/db.Shitpost'
+      summary: Create a shitpost
+  /shitposts/{id}:
+    delete:
+      description: Delete a shitpost by ID
+      operationId: deleteShitpost
+      parameters:
+      - description: Shitpost ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Shitpost deletion payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.DeleteShitpostPayload'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Delete a shitpost
+    get:
+      description: Get a shitpost by ID
+      operationId: getShitpost
+      parameters:
+      - description: Shitpost ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Shitpost'
+      summary: Get a shitpost
+produces:
+- application/json
+schemes:
+- http
+swagger: "2.0"
