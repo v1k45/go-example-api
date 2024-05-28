@@ -3,12 +3,18 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
+	"math"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 
 	"github.com/v1k45/shitpost/db"
+)
+
+const (
+	// DefaultPageSize is the default number of shitposts to return per page.
+	DefaultPageSize = 5
 )
 
 type Handler struct {
@@ -28,9 +34,41 @@ func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 	JSONResponse(w, http.StatusOK, response)
 }
 
+type PaginatedShitpostsResponse struct {
+	Results     []db.ListShitpostsRow `json:"results"`
+	Count       int                   `json:"count"`
+	CurrentPage int                   `json:"currentPage"`
+	Pages       int                   `json:"pages"`
+}
+
 func (h *Handler) ListShitposts(w http.ResponseWriter, r *http.Request) {
-	// todo: pagination
-	shitposts, err := h.queries.ListShitposts(r.Context())
+	// get page number
+	pageQuery := r.URL.Query().Get("page")
+	if pageQuery == "" {
+		pageQuery = "1"
+	}
+	page, err := strconv.Atoi(pageQuery)
+	if err != nil {
+		JSONResponse(w, http.StatusBadRequest, ErrorResponse{Error: "Invalid page number"})
+		return
+	}
+
+	totalShitposts, err := h.queries.CountShitposts(r.Context())
+	if err != nil {
+		JSONResponse(w, http.StatusInternalServerError, ErrorResponse{Error: "Error fetching shitposts"})
+		return
+	}
+
+	// validate page
+	totalPages := int64(math.Ceil(float64(totalShitposts) / float64(DefaultPageSize)))
+	if page < 1 || int64(page) > totalPages {
+		JSONResponse(w, http.StatusBadRequest, ErrorResponse{Error: "Invalid page number"})
+		return
+	}
+
+	offset := (page - 1) * DefaultPageSize
+
+	shitposts, err := h.queries.ListShitposts(r.Context(), db.ListShitpostsParams{Limit: int64(DefaultPageSize), Offset: int64(offset)})
 	if err != nil {
 		JSONResponse(w, http.StatusInternalServerError, ErrorResponse{Error: "Error fetching shitposts"})
 		return
@@ -40,7 +78,12 @@ func (h *Handler) ListShitposts(w http.ResponseWriter, r *http.Request) {
 		shitposts = []db.ListShitpostsRow{}
 	}
 
-	JSONResponse(w, http.StatusOK, shitposts)
+	JSONResponse(w, http.StatusOK, PaginatedShitpostsResponse{
+		Results:     shitposts,
+		Count:       int(totalShitposts),
+		CurrentPage: page,
+		Pages:       int(totalPages),
+	})
 }
 
 func (h *Handler) CreateShitpost(w http.ResponseWriter, r *http.Request) {

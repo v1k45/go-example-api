@@ -10,6 +10,17 @@ import (
 	"time"
 )
 
+const countShitposts = `-- name: CountShitposts :one
+SELECT COUNT(*) FROM shitposts
+`
+
+func (q *Queries) CountShitposts(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countShitposts)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createShitpost = `-- name: CreateShitpost :one
 INSERT INTO shitposts (title, author, content, passcode) VALUES (?, ?, ?, ?) RETURNING id, title, author, content, passcode, created_at, updated_at
 `
@@ -99,8 +110,13 @@ func (q *Queries) GetShitpostByIdAndPasscode(ctx context.Context, arg GetShitpos
 }
 
 const listShitposts = `-- name: ListShitposts :many
-SELECT id, title, author, content, created_at, updated_at FROM shitposts
+SELECT id, title, author, content, created_at, updated_at FROM shitposts ORDER BY created_at DESC LIMIT ? OFFSET ?
 `
+
+type ListShitpostsParams struct {
+	Limit  int64 `json:"limit"`
+	Offset int64 `json:"offset"`
+}
 
 type ListShitpostsRow struct {
 	ID        int64     `json:"id"`
@@ -111,8 +127,8 @@ type ListShitpostsRow struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-func (q *Queries) ListShitposts(ctx context.Context) ([]ListShitpostsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listShitposts)
+func (q *Queries) ListShitposts(ctx context.Context, arg ListShitpostsParams) ([]ListShitpostsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listShitposts, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
