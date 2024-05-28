@@ -53,6 +53,16 @@ POST /shitposts
 GET /shitposts/{id}
 ```
 
+### List shitposts
+
+```
+GET /shitposts
+```
+
+```
+GET /shitposts?page=2
+```
+
 #### Delete a Shitpost
 
 ```
