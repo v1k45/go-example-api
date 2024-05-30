@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"log"
+	"log/slog"
 	"strconv"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -19,7 +20,8 @@ var migrationsCmd = &cobra.Command{
 		var err error
 		migrator, err = db.Migrate(viper.GetString("database_url"))
 		if err != nil {
-			log.Fatalf("Error initializing migrator: %v", err)
+			slog.Error("migrations_initialization_failed", "error", err)
+			log.Fatalf("Error initializing migrations: %v", err)
 		}
 	},
 }
@@ -34,9 +36,11 @@ var migrateUpCmd = &cobra.Command{
 	Short: "Migrate the database up to the latest version",
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := migrator.Up(); err != nil && err != migrate.ErrNoChange {
+			slog.Error("migrations_up_failed", "error", err)
 			log.Fatalf("Error migrating up: %v", err)
 		}
 
+		slog.Info("migrations_up_succeeded")
 		log.Println("Migrated up to latest version")
 	},
 }
@@ -46,9 +50,11 @@ var migrateDownCmd = &cobra.Command{
 	Short: "Migrate the database down to the previous version",
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := migrator.Down(); err != nil && err != migrate.ErrNoChange {
+			slog.Error("migrations_down_failed", "error", err)
 			log.Fatalf("Error migrating down: %v", err)
 		}
 
+		slog.Info("migrations_down_succeeded")
 		log.Println("Migrated down to previous version")
 	},
 }
@@ -60,16 +66,21 @@ var migrateToCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		migrateToVersion, err := strconv.Atoi(args[0])
 		if err != nil || migrateToVersion < 0 {
+			slog.Error("migrations_invalid_version", "error", err)
 			log.Fatalf("Invalid migration version: %v", err)
 		}
 
 		if migrateToVersion == 0 {
+			slog.Error("migrations_missing_version", "version", migrateToVersion)
 			log.Fatal("Missing migration version", migrateToVersion)
 		}
 
 		if err := migrator.Migrate(uint(migrateToVersion)); err != nil && err != migrate.ErrNoChange {
+			slog.Error("migrations_to_failed", "version", migrateToVersion, "error", err)
 			log.Fatalf("Error migrating to version %d: %v", migrateToVersion, err)
 		}
+
+		slog.Info("migrations_to_succeeded", "version", migrateToVersion)
 		log.Printf("Migrated to version %d", migrateToVersion)
 	},
 }
@@ -79,6 +90,7 @@ var migrateDrop = &cobra.Command{
 	Short: "Drop all tables from the database",
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := migrator.Drop(); err != nil {
+			slog.Error("migrations_drop_failed", "error", err)
 			log.Fatalf("Error dropping tables: %v", err)
 		}
 

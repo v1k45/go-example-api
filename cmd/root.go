@@ -1,8 +1,7 @@
 package cmd
 
 import (
-	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -14,9 +13,6 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "shitpost",
 	Short: "Run shitposting API server",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Hello, World!")
-	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -58,6 +54,6 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		log.Println("Using config file:", viper.ConfigFileUsed())
+		slog.Debug("using_config_file", "config_file", viper.ConfigFileUsed())
 	}
 }

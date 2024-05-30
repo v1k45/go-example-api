@@ -218,7 +218,7 @@ func (h *Handler) DeleteShitpost(w http.ResponseWriter, r *http.Request) {
 }
 
 // Routes returns the HTTP routes for the API.
-func (h *Handler) Routes() *http.ServeMux {
+func (h *Handler) Routes() http.Handler {
 	routes := http.NewServeMux()
 	routes.HandleFunc("GET /", h.Index)
 
@@ -229,7 +229,8 @@ func (h *Handler) Routes() *http.ServeMux {
 	routes.Handle("GET /swagger/", httpSwagger.Handler(
 		httpSwagger.URL("/swagger/doc.json"),
 	))
-	return routes
+
+	return LogMiddleware(routes)
 }
 
 func NewHandler(conn *sql.DB) *Handler {
