@@ -3,6 +3,7 @@ package api
 import (
 	"log/slog"
 	"net/http"
+	"runtime/debug"
 	"time"
 )
 
@@ -26,5 +27,18 @@ func LogMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(writer, r)
 
 		slog.Info("request", "method", r.Method, "path", r.URL.Path, "duration", time.Since(start))
+	})
+}
+
+func RecoverMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				slog.Error("panic", "error", err, "method", r.Method, "path", r.URL.Path, "stack", debug.Stack())
+				JSONResponse(w, http.StatusInternalServerError, ErrorResponse{Error: "Internal server error"})
+			}
+		}()
+
+		next.ServeHTTP(w, r)
 	})
 }

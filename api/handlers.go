@@ -217,6 +217,11 @@ func (h *Handler) DeleteShitpost(w http.ResponseWriter, r *http.Request) {
 	JSONResponse(w, http.StatusNoContent, nil)
 }
 
+// handler to simulate a panic
+func (h *Handler) Panic(w http.ResponseWriter, r *http.Request) {
+	panic("Simulated panic")
+}
+
 // Routes returns the HTTP routes for the API.
 func (h *Handler) Routes() http.Handler {
 	routes := http.NewServeMux()
@@ -226,11 +231,14 @@ func (h *Handler) Routes() http.Handler {
 	routes.HandleFunc("POST /shitposts", h.CreateShitpost)
 	routes.HandleFunc("GET /shitposts/{id}", h.DeleteShitpost)
 	routes.HandleFunc("DELETE /shitposts/{id}", h.DeleteShitpost)
+
+	routes.HandleFunc("GET /panic", h.Panic)
+
 	routes.Handle("GET /swagger/", httpSwagger.Handler(
 		httpSwagger.URL("/swagger/doc.json"),
 	))
 
-	return LogMiddleware(routes)
+	return RecoverMiddleware(LogMiddleware(routes))
 }
 
 func NewHandler(conn *sql.DB) *Handler {
