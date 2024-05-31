@@ -78,3 +78,13 @@ DELETE /shitposts/{id}
 ```
 GET /swagger/
 ```
+
+### Dependencies
+
+- **sqlc**: For generating code from SQL
+- **go-migrate**: Database migrations using SQL
+- **ozzo-validation**: User payload valiation
+- **swaggo**: Swagger specification generator
+- **cobra**: CLI helper
+- **viper**: Env/config management
+- **air**: live reloading server
