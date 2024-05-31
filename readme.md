@@ -2,9 +2,9 @@
 
 REST API to create shitposts. Purely made for learning purposes.
 
-The goal here is to create a REST API that allows users to create shitposts. The shitposts will be stored in a database and can be retrieved, updated and deleted. The API will be built using Golang and the database will be SQLite.
+The goal here is to create a REST API that allows users to create shitposts. The shitposts will be stored in a database and can be retrieved, created and deleted. The API will be built using Golang and the database will be SQLite.
 
-We'll try to follow the best practices for building REST APIs and we'll also try to make the code as clean as possible. We'll avoid using any external libraries for the database and we'll use the standard library instead.
+We'll try to follow the best practices for building REST APIs and we'll also try to make the code as clean as possible. We'll avoid using any external libraries we'll prefer the standard library instead.
 
 ### Requirements
 
