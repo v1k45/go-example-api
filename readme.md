@@ -19,6 +19,12 @@ API Design:
 
 ### Usage
 
+#### Building the project
+
+```bash
+go build -o ./bin/shitpost .
+```
+
 #### Running the server
 
 ```bash
@@ -32,6 +38,15 @@ API Design:
 ./shitposts migrations down
 ./shitposts migrations to 0001
 ./shitposts migrations drop
+```
+
+#### Makefile
+
+```bash
+make build
+make server
+make migrations
+make dev
 ```
 
 ### Endpoints
