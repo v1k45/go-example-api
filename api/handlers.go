@@ -238,7 +238,12 @@ func (h *Handler) Routes() http.Handler {
 		httpSwagger.URL("/swagger/doc.json"),
 	))
 
-	return RecoverMiddleware(LogMiddleware(routes))
+	middlewares := ChainMiddlewares(
+		LogMiddleware,
+		RecoverMiddleware,
+	)
+
+	return middlewares(routes)
 }
 
 func NewHandler(conn *sql.DB) *Handler {

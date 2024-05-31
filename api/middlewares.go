@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 	"runtime/debug"
+	"slices"
 	"time"
 )
 
@@ -16,6 +17,18 @@ type wrappedResponseWriter struct {
 func (w *wrappedResponseWriter) WriteHeader(status int) {
 	w.status = status
 	w.ResponseWriter.WriteHeader(status)
+}
+
+type Middleware func(http.Handler) http.Handler
+
+func ChainMiddlewares(middlewares ...Middleware) Middleware {
+	slices.Reverse(middlewares)
+	return func(next http.Handler) http.Handler {
+		for _, m := range middlewares {
+			next = m(next)
+		}
+		return next
+	}
 }
 
 // LogMiddleware logs incoming requests.
