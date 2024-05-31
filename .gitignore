@@ -23,5 +23,6 @@ go.work.sum
 
 # Air builds
 tmp/
+bin/
 *.db
 
